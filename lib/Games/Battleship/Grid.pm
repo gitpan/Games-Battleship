@@ -1,13 +1,13 @@
+# $Id: Grid.pm,v 1.16 2004/08/25 05:35:34 gene Exp $
+
 package Games::Battleship::Grid;
-
-use vars qw($VERSION);
-$VERSION = '0.0201';
-
+$VERSION = 0.03;
 use strict;
+use warnings;
 use Carp;
 use Games::Battleship::Craft;
 
-sub new {  # {{{
+sub new {
     my ($proto, %args) = @_;
     my $class = ref ($proto) || $proto;
     my $self = {
@@ -17,10 +17,10 @@ sub new {  # {{{
     bless $self, $class;
     $self->_init($args{fleet});
     return $self;
-}  # }}}
+}
 
 # Place the array reference of craft on the grid.
-sub _init {  # {{{
+sub _init {
     my ($self, $fleet) = @_;
 
     # Initialize the matrix.
@@ -44,7 +44,9 @@ sub _init {  # {{{
             );
         }
         else {
-            while (not $ok) {  # {{{
+# XXX This looping is needlessly brutish. refactoring please
+            while (not $ok) {
+                # Grab a random coordinate that we haven't seen.
                 $x0 = int(rand($self->{dimension}[0] + 1));
                 $y0 = int(rand($self->{dimension}[1] + 1));
 
@@ -57,18 +59,18 @@ sub _init {  # {{{
                 # If the craft is not placed off the grid and it does
                 # not collide with another craft, then we are ok to
                 # move on.
+# XXX regex constraint rules here?
                 if ($x1 <= $self->{dimension}[0] &&
                     $y1 <= $self->{dimension}[1]
                 ) {
-                    # For each craft with a position set that is not
-                    # the current one, do the craft share a common
-                    # point?
+                    # For each craft (except the current one) that has
+                    # a position, do the craft share a common point?
                     my $collide = 0;
 
                     for (@$fleet) {
-                        # Ships are not the same.
+                        # Ships can't be the same.
                         if ($craft->{name} ne $_->{name}) {
-                            # Ships don't intersect.
+                            # Ships can't intersect.
                             if (defined $_->{position} &&
                                 _segment_intersection(
                                     $x0, $y0,
@@ -85,12 +87,12 @@ sub _init {  # {{{
 
                     $ok = 1 unless $collide;
                 }
-            }  # }}}
+            }
 
             # Set the craft position.
             $craft->{position} = [[$x0, $y0], [$x1, $y1]];
         }
-#carp "$craft->{name}: [$x0, $y0], [$x1, $y1], $craft->{points}\n";
+#warn "$craft->{name}: [$x0, $y0], [$x1, $y1], $craft->{points}\n";
 
         # Add the craft to the grid.
         for my $n (0 .. $craft->{points} - 1) {
@@ -102,15 +104,16 @@ sub _init {  # {{{
             }
         }
     }
-}  # }}}
+}
 
-# Get the coordinates of the end of the segment based on a given span.
-sub _tail_coordinates {  # {{{
+sub _tail_coordinates {
+    # Get the coordinates of the end of the segment based on a given
+    # span.
     my ($x0, $y0, $span) = @_;
 
-    # Set orientation to 0 (vetical) or 1 (horizontal).
+    # Set orientation to 0 (vertical) or 1 (horizontal).
     my $orient = int rand 2;
-    
+
     my ($x1, $y1) = ($x0, $y0);
 
     if ($orient) {
@@ -121,23 +124,24 @@ sub _tail_coordinates {  # {{{
     }
 
     return $orient, $x1, $y1;
-}  # }}}
+}
 
-sub _segment_intersection {  # {{{
-    # 0 - Intersection dosn't exist.
+sub _segment_intersection {
+    # 0 - Intersection doesn't exist.
     # 1 - Intersection exists.
-# NOTE: We just care about yes/no.  The old way returns 2 and 3 also.
-    # 0 (was 2) - two line segments are parallel
-    # 0 (was 3) - two line segments are collinear, but not overlap.
-    # 4 - two line segments are collinear, and share one same end point.
-    # 5 - two line segments are collinear, and overlap.
+# NOTE: In Battleship, we only care about yes/no, but the
+#       original code can tell much more:
+    # 0 (was 2) - line segments are parallel
+    # 0 (was 3) - line segments are collinear but do not overlap.
+    # 4 - line segments are collinear and share an end point.
+    # 5 - line segments are collinear and overlap.
 
     croak "segment_intersection needs 4 points\n" unless @_ == 8;
-    my (
+    my(
         $x0, $y0,  $x1, $y1,  # AB segment 1
         $x2, $y2,  $x3, $y3   # CD segment 2
     ) = @_;
-#carp "[$x0, $y0]-[$x1, $y1], [$x2, $y2]-[$x3, $y3]\n";
+#warn "[$x0, $y0]-[$x1, $y1], [$x2, $y2]-[$x3, $y3]\n";
 
     my $xba = $x1 - $x0;
     my $yba = $y1 - $y0;
@@ -154,13 +158,8 @@ sub _segment_intersection {  # {{{
         my $u = $t1 / $delta;
         my $v = $t2 / $delta;
 
-        # Two segments intersect (including intersect at end points).
-        if ($u <= 1 && $u >= 0 && $v <= 1 && $v >= 0) {
-            return 1;
-        }
-        else {
-            return 0; 
-        }
+        # Two segments intersect (including at end points).
+        return ($u <= 1 && $u >= 0 && $v <= 1 && $v >= 0) ? 1 : 0;
     }
     else {
         # AB & CD are parallel.
@@ -210,7 +209,7 @@ sub _segment_intersection {  # {{{
             }
         }
     }
-}  # }}}
+}
 
 1;
 
@@ -232,10 +231,8 @@ Games::Battleship::Grid - A Battleship grid class
 =head1 DESCRIPTION
 
 A C<Games::Battleship::Grid> object represents a Battleship playing
-surface complete with fleet position references and computation.
-
-Check out the powerful C<_segment_intersection> function in the 
-source code of this module.  :-)
+surface complete with fleet position references and line intersection
+collision detection.
 
 =head1 PUBLIC METHODS
 
@@ -247,7 +244,7 @@ source code of this module.  :-)
 
 =item * fleet => [$CRAFT_1, $CRAFT_2, ... $CRAFT_N]
 
-Optional array reference of an unlimited number of 
+Optional array reference of an unlimited number of
 C<Games::Battleship::Craft> objects.
 
 If provided, the fleet will be placed on the grid with random but
@@ -274,20 +271,20 @@ If not provided, the standard ten by ten playing surface is used.
 
   ($orientation, $x1, $y1) = _tail_coordinates($x0, $y0, $span);
 
-Return a vector for the craft.  That is, hand back the vertical or 
+Return a vector for the craft.  That is, hand back the vertical or
 horizontal line segment orientation and the tail coordinates based on
-the head coodinates and the length of the segment (i.e. the craft).
+the head coordinates and the length of the segment (i.e. the craft).
 
 =item B<_segment_intersection> @COORDINATES
 
   $intersect = _segment_intersection(
-      px0, py0,  px1, py1,
-      qx0, qy0,  qx1, qy1
+      p_x0, p_y0,  p_x1, p_y1,
+      q_x0, q_y0,  q_x1, q_y1
   );
 
 Return zero if there is no intersection (or touching or overlap).
 
-Each pair of values define a coordinate and each pair of coordinates 
+Each pair of values define a coordinate and each pair of coordinates
 define a line segment.
 
 =back
@@ -296,8 +293,8 @@ define a line segment.
 
 Allow diagonal craft placement.
 
-Allow placement restriction rules (e.g. not on edges, not adjacent, 
-etc.).
+Allow placement restriction rules (e.g. not on edges, not adjacent,
+etc.) as an arrayref of boundary equations or regular expressions.
 
 Allow some type of interactive craft repositioning.
 
@@ -312,10 +309,6 @@ L<Games::Battleship::Craft>
 Segment intersection:
 
 C<http://www.meca.ucl.ac.be/~wu/FSA2716/Exercise1.htm>
-
-=head1 CVS
-
-$Id: Grid.pm,v 1.12 2004/02/07 03:49:26 gene Exp $
 
 =head1 AUTHOR
 

@@ -1,14 +1,14 @@
+# $Id: Player.pm,v 1.25 2004/08/25 08:36:50 gene Exp $
+
 package Games::Battleship::Player;
-
-use vars qw($VERSION);
-$VERSION = '0.0401';
-
+$VERSION = 0.05;
 use strict;
+use warnings;
 use Carp;
 use Games::Battleship::Craft;
 use Games::Battleship::Grid;
 
-sub new {  # {{{
+sub new {
     my ($proto, %args) = @_;
     my $class = ref ($proto) || $proto;
 
@@ -44,9 +44,9 @@ sub new {  # {{{
     bless $self, $class;
     $self->_init(\%args);
     return $self;
-}  # }}}
+}
 
-sub _init {  # {{{
+sub _init {
     my ($self, $args) = @_;
 
     # Initialize a grid and place the player's fleet, if one is
@@ -58,31 +58,22 @@ sub _init {  # {{{
 
     # Compute the life points for this player.
     $self->{life} += $_->{points} for @{ $self->{fleet} };
-}  # }}}
+}
 
 sub name { return shift->{name} }
 
 # The enemy must be a G::B::Player object.
-sub grid {  # {{{
+sub grid {
     my ($self, $enemy) = @_;
-    my $grid;
-
-    if ($enemy) {
-        $grid .= join "\n",
-            map { "@$_" }
-                @{ $self->{$enemy->{name}}{matrix} };
-        $grid .= "\n-\n";
-    }
-
-    $grid .= join "\n",
-        map { "@$_" }
-            @{ $self->{grid}{matrix} };
-
-    return $grid;
-}  # }}}
+    return $enemy
+        ? join "\n",
+            map { "@$_" } @{ $self->{$enemy->{name}}{matrix} }
+        : join "\n",
+            map { "@$_" } @{ $self->{grid}{matrix} };
+}
 
 # The enemy must be a G::B::Player object.
-sub strike {  # {{{
+sub strike {
     my ($self, $enemy, $x, $y) = @_;
 
     croak "No opponent to strike.\n" unless $enemy;
@@ -98,7 +89,7 @@ sub strike {  # {{{
         my $map_pos   = \$self->{$enemy->{name}}{matrix}[$x][$y];
 
         if ($$map_pos ne '.') {
-#            warn sprintf "Duplicate strike on $enemy->{name} by $self->{name} at $x, $y.\n";
+            warn "Duplicate strike on $enemy->{name} by $self->{name} at $x, $y.\n";
             return -1;
         }
         elsif ($enemy->_is_a_hit($x, $y)) { # Set the enemy grid map coordinate char to 'hit'.
@@ -107,14 +98,14 @@ sub strike {  # {{{
             # What craft was hit?
             my $craft = $self->craft(id => $$enemy_pos);
 
-            warn "$enemy->{name}'s $craft->{name} was hit by $self->{name}!\n";
+            warn "$self->{name} hit $enemy->{name}'s $craft->{name}!\n";
 
             # How much is left on this craft?
             my $remainder = $craft->hit;
 
             # Tally the hit in the craft object, itself and emit a happy
             # warning if it was totally destroyed.
-            warn "* $enemy->{name}'s $craft->{name} was destroyed by $self->{name}!\n"
+            warn "$self->{name} sunk $enemy->{name}'s $craft->{name}!\n"
                 unless $remainder;
 
             # Indicate the hit on the enemy grid by lowercasing the craft
@@ -125,7 +116,7 @@ sub strike {  # {{{
             $self->{score}++;
 
             # Decrement the opponent's life.
-            warn "* $enemy->{name} is out of the game.\n"
+            warn "$enemy->{name} is out of the game.\n"
                 if --$enemy->{life} <= 0;
 
             return 1;
@@ -141,15 +132,15 @@ sub strike {  # {{{
         warn "$enemy->{name} is already out of the game. Strike another opponent.\n";
         return -1;
     }
-}  # }}}
+}
 
-sub _is_a_hit {  # {{{
+sub _is_a_hit {
     my ($self, $x, $y) = @_;
     return $self->{grid}{matrix}[$x][$y] ne '.'
         ? 1 : 0;
-}  # }}}
+}
 
-sub craft {  # {{{
+sub craft {
     my ($self, $key, $val) = @_;
 
     # If the key is not defined, assume it's supposed to be the id.
@@ -168,7 +159,7 @@ sub craft {  # {{{
     }
 
     return $craft;
-}  # }}}
+}
 
 1;
 
@@ -182,34 +173,27 @@ Games::Battleship::Player - A Battleship player class
 
   use Games::Battleship::Player;
 
-  $aeryk => Games::Battleship::Player->new(name => 'Aeryk');
-  $gene  => Games::Battleship::Player->new(name => 'Gene');
+  $aeryk = Games::Battleship::Player->new(name => 'Aeryk');
+  $gene  = Games::Battleship::Player->new(name => 'Gene');
 
   print 'Player 1: ', $aeryk->name, "\n",
         'Player 2: ', $gene->name,  "\n";
 
-  $strike = $aeryk->strike($gene, 0, 0);
-
-  print $aeryk->grid($gene),
-      ($strike == 1
-        ? 'Hit!'
-        : $strike == 0
-            ? 'Missed.'
-            : 'duplicate');
-
-  # Repeat strike and get a warning.
   $aeryk->strike($gene, 0, 0);
 
-  # This method is handy, but only used in the strike method.
+  # Repeat and get a duplicate strike warning.
+  $strike = $aeryk->strike($gene, 0, 0);
+
+  print $aeryk->grid($gene), "\nThat was a " .
+    ( $strike == 1 ? 'hit!'
+    : $strike == 0 ? 'miss.'
+                   : 'duplicate?' ), "\n";
+
   $craft_obj = $aeryk->craft($id);
-
-=head1 ABSTRACT
-
-A Battleship player class
 
 =head1 DESCRIPTION
 
-A C<Games::Battleship::Player> object represents a Battleship player 
+A C<Games::Battleship::Player> object represents a Battleship player
 complete with fleet and game surface.
 
 =head1 PUBLIC METHODS
@@ -250,9 +234,10 @@ ten by ten grid is used.
 
 =item B<grid>
 
+  $grid = $player->grid();
   $grid = $player->grid($enemy);
 
-Return the playing grid as a text matrix like this:
+Return the playing grid as a "flush-left" text matrix like this:
 
   . . . . . . . . . .
   . . . . . . . . . .
@@ -272,26 +257,26 @@ apppropriate representation, such as a PNG file or XML, etc.
 
   $strike = $player->strike($enemy, $x, $y);
 
-Strike the enemy at the given coordinate and return a numeric value 
+Strike the enemy at the given coordinate and return a numeric value
 to indicate success or failure.
 
 The player to strike must be given as a C<Games::Battleship::Player>
 object and the coordinate must be given as a numeric pair.
 
-On success, an "x" is placed on the striking player's "opponent map 
-grid" (a C<Games::Battleship::Grid> object attribute named for the 
-opponent) at the given coordinate, the opponent's "craft grid" is 
-updated by lowercasing the C<Games::Battleship::Craft> object C<id> 
-at the given coordinate, the opponent C<Games::Battleship::Craft> 
-object C<hits> attribute is incremented, the striking player's 
+On success, an "x" is placed on the striking player's "opponent map
+grid" (a C<Games::Battleship::Grid> object attribute named for the
+opponent) at the given coordinate, the opponent's "craft grid" is
+updated by lowercasing the C<Games::Battleship::Craft> object C<id>
+at the given coordinate, the opponent C<Games::Battleship::Craft>
+object C<hits> attribute is incremented, the striking player's
 C<score> attribute is incremented, and a one (i.e. true) is returned.
 
 If an enemy craft is completely destroyed, a happy warning is emitted.
 
-On failure, an "o" is placed on the striking player's "opponent map 
+On failure, an "o" is placed on the striking player's "opponent map
 grid" at the given coordinate and a zero (i.e. false) is returned.
 
-If a player calls for a strike at a coordinate that was already 
+If a player calls for a strike at a coordinate that was already
 struck, a warning is emitted and a negative one (-1) is returned.
 
 =item B<craft> $KEY [$VALUE]
@@ -303,7 +288,7 @@ struck, a warning is emitted and a negative one (-1) is returned.
 Return the player's C<Games::Battleship::Craft> object that matches
 the given argument(s).
 
-If the last argument is not provided the first argument is assumed to 
+If the last argument is not provided the first argument is assumed to
 be the C<id> attribute.
 
 =back
@@ -324,7 +309,7 @@ otherwise.
 
 Include a weapon argument in the C<strike> method.
 
-Make the C<grid> method honor the game type and return something 
+Make the C<grid> method honor the game type and return something
 appropriate.
 
 =head1 SEE ALSO
@@ -334,10 +319,6 @@ L<Games::Battleship>
 L<Games::Battleship::Craft>
 
 L<Games::Battleship::Grid>
-
-=head1 CVS
-
-$Id: Player.pm,v 1.18 2004/02/07 03:57:28 gene Exp $
 
 =head1 AUTHOR
 

@@ -1,8 +1,9 @@
-package Games::Battleship::Craft;
+# $Id: Craft.pm,v 1.12 2004/08/25 05:35:33 gene Exp $
 
-use vars qw($VERSION);
-$VERSION = '0.0201';
+package Games::Battleship::Craft;
+$VERSION = 0.03;
 use strict;
+use warnings;
 use Carp;
 
 sub new {
@@ -63,7 +64,7 @@ Games::Battleship::Craft - A Battleship craft class
 =head1 DESCRIPTION
 
 A C<Games::Battleship::Craft> object represents the profile of a
-Battleship 
+Battleship
 
 =head1 PUBLIC METHODS
 
@@ -75,12 +76,12 @@ Battleship
 
 =item * id => $STRING
 
-A scalar identifier to use to indicate position on the grid.  If one 
-is not provided, the uppercased first name characer will be used by
+A scalar identifier to use to indicate position on the grid.  If one
+is not provided, the uppercased first name character will be used by
 default.
 
-Currently, it is required that this be a single uppercase letter (the 
-first letter of the craft name, probably), since a C<hit> will be 
+Currently, it is required that this be a single uppercase letter (the
+first letter of the craft name, probably), since a C<hit> will be
 indicated by "lowercasing" this mark on a player grid.
 
 =item * name => $STRING
@@ -116,10 +117,6 @@ Have different numbers of different weapons.
 Allow a craft to have a width.
 
 Allow diagonal positions too.  Why not?
-
-=head1 CVS
-
-$Id: Craft.pm,v 1.8 2004/02/07 03:24:23 gene Exp $
 
 =head1 AUTHOR
 

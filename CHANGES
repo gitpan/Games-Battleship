@@ -1,5 +1,13 @@
 Changes file for Games::Battleship
 
+0.05 Wed Aug 25 2004
+    - Removed lame code fold markers.
+    - Fixed and enhanced POD and in-line comments all around.
+    - Used the warnings pragma.
+    - Removed core's Test::More from the Makefile prereqs.
+    - Improved the tests big-time.
+    - SPELL CHECKING? HELLO?
+
 0.0402 Fri Feb 9 2004
     - Fixed POD again.  Argh.
 
@@ -7,7 +15,7 @@ Changes file for Games::Battleship
     - Fix and enhance documentation big time.
 
 0.04 Thu Feb 5 2004
-    - The VERSION goes on it's own line.
+    - The VERSION goes on its own line.
     - Added a $player->name accessor.
     - Added a $game->players accessor.
     - Added a "bogus user" test.
