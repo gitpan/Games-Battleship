@@ -1,7 +1,8 @@
-# $Id: Grid.pm,v 1.8 2003/09/04 00:32:21 gene Exp $
-
 package Games::Battleship::Grid;
-use vars qw($VERSION); $VERSION = '0.02';
+
+use vars qw($VERSION);
+$VERSION = '0.0201';
+
 use strict;
 use Carp;
 use Games::Battleship::Craft;
@@ -17,7 +18,7 @@ sub new {  # {{{
     return $self;
 }  # }}}
 
-# Place the array reference of crafts on the grid.
+# Place the array reference of craft on the grid.
 sub _init {  # {{{
     my ($self, $fleet) = @_;
 
@@ -59,7 +60,7 @@ sub _init {  # {{{
                     $y1 <= $self->{dimension}[1]
                 ) {
                     # For each craft with a position set that is not
-                    # the current one, do the crafts share a common
+                    # the current one, do the craft share a common
                     # point?
                     my $collide = 0;
 
@@ -232,7 +233,8 @@ A Battleship grid class
 A C<Games::Battleship::Grid> object represents a Battleship grid 
 class.
 
-Note that the C<_segment_intersection> method is really cool.  : )
+Check out the powerful and mathematically elegant 
+C<_segment_intersection> function in the source code of this module.
 
 =head1 PUBLIC METHODS
 
@@ -313,6 +315,10 @@ L<Games::Battleship>
 L<Games::Battleship::Craft>
 
 C<http://www.meca.ucl.ac.be/~wu/FSA2716/Exercise1.htm>
+
+=head1 CVS
+
+$Id: Grid.pm,v 1.11 2004/02/05 09:20:23 gene Exp $
 
 =head1 AUTHOR
 

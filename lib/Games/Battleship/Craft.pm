@@ -1,7 +1,8 @@
-# $Id: Craft.pm,v 1.2 2003/09/04 00:32:21 gene Exp $
-
 package Games::Battleship::Craft;
-use vars qw($VERSION); $VERSION = '0.01';
+
+use vars qw($VERSION);
+$VERSION = '0.02';
+
 use strict;
 use Carp;
 
@@ -110,6 +111,10 @@ Allow a craft to have a width.
 =head1 SEE ALSO
 
 L<Games::Battleship>
+
+=head1 CVS
+
+$Id: Craft.pm,v 1.7 2004/02/05 09:00:27 gene Exp $
 
 =head1 AUTHOR
 

@@ -5,6 +5,7 @@ CVS/.*
 \.tar$
 \.tgz$
 \.tar\.gz$
+\.yml$
 ^tmp/
 ^blib/
 ^Makefile$

@@ -1,7 +1,8 @@
-# $Id: Player.pm,v 1.9 2003/09/05 04:37:57 gene Exp $
-
 package Games::Battleship::Player;
-use vars qw($VERSION); $VERSION = '0.03';
+
+use vars qw($VERSION);
+$VERSION = '0.04';
+
 use strict;
 use Carp;
 use Games::Battleship::Craft;
@@ -59,6 +60,8 @@ sub _init {  # {{{
     $self->{life} += $_->{points} for @{ $self->{fleet} };
 }  # }}}
 
+sub name { return shift->{name} }
+
 # The enemy must be a G::B::Player object.
 sub grid {  # {{{
     my ($self, $enemy) = @_;
@@ -95,21 +98,24 @@ sub strike {  # {{{
         my $map_pos   = \$self->{$enemy->{name}}{matrix}[$x][$y];
 
         if ($$map_pos ne '.') {
-            carp sprintf "You already struck [%d, %d]. Try again.\n",
-                $x, $y;
+#            warn sprintf "Duplicate strike on $enemy->{name} by $self->{name} at $x, $y.\n";
             return -1;
         }
-        elsif ($enemy->_is_a_hit($x, $y)) {
-            # Set the enemy grid map coordinate char to 'hit'.
+        elsif ($enemy->_is_a_hit($x, $y)) { # Set the enemy grid map coordinate char to 'hit'.
             $$map_pos = 'x';
 
             # What craft was hit?
             my $craft = $self->craft(id => $$enemy_pos);
 
+            warn "$enemy->{name}'s $craft->{name} was hit by $self->{name}!\n";
+
+            # How much is left on this craft?
+            my $remainder = $craft->hit;
+
             # Tally the hit in the craft object, itself and emit a happy
             # warning if it was totally destroyed.
-            carp "Enemy craft, '$craft->{name}', destroyed!\n"
-                unless $craft->hit;
+            warn "* $enemy->{name}'s $craft->{name} was destroyed by $self->{name}!\n"
+                unless $remainder;
 
             # Indicate the hit on the enemy grid by lowercasing the craft
             # id.
@@ -119,19 +125,20 @@ sub strike {  # {{{
             $self->{score}++;
 
             # Decrement the opponent's life.
-            carp "$enemy->{name} is out of the game.\n"
+            warn "* $enemy->{name} is out of the game.\n"
                 if --$enemy->{life} <= 0;
 
             return 1;
         }
         else {
             # Set the enemy grid map coordinate char to 'miss'.
+            warn "$self->{name} missed $enemy->{name} at $x, $y.\n";
             $$map_pos = 'o';
             return 0;
         }
     }
     else {
-        carp "$enemy->{name} is already out of the game. Strike another opponent.\n";
+        warn "$enemy->{name} is already out of the game. Strike another opponent.\n";
         return -1;
     }
 }  # }}}
@@ -178,6 +185,9 @@ Games::Battleship::Player - A Battleship player class
   $aeryk => Games::Battleship::Player->new(name => 'Aeryk');
   $gene  => Games::Battleship::Player->new(name => 'Gene');
 
+  print 'Player 1: ', $aeryk->name, "\n",
+        'Player 2: ', $gene->name,  "\n";
+
   $strike = $aeryk->strike($gene, 0, 0);
 
   print $aeryk->grid($gene),
@@ -210,7 +220,7 @@ class, complete with fleet and game surface.
 
   $player => Games::Battleship::Player->new(
       name  => 'Aeryk',
-      fleet => \@crafts,
+      fleet => \@fleet,
       dimensions => [$x, $y],
   );
 
@@ -279,8 +289,7 @@ On failure, an "o" is placed on the striking player's "opponent map
 grid" at the given coordinate and a zero (i.e. false) is returned.
 
 If a player calls for a strike at a coordinate that was already 
-struck, a warning is emitted and a negative one (i.e. -1) is 
-returned.
+struck, a warning is emitted and a negative one (-1) is returned.
 
 =item B<craft> $KEY [, $VALUE]
 
@@ -318,6 +327,10 @@ L<Games::Battleship>
 L<Games::Battleship::Craft>
 
 L<Games::Battleship::Grid>
+
+=head1 CVS
+
+$Id: Player.pm,v 1.17 2004/02/05 08:59:32 gene Exp $
 
 =head1 AUTHOR
 

@@ -1,7 +1,8 @@
-# $Id: Battleship.pm,v 1.9 2003/09/05 04:56:03 gene Exp $
-
 package Games::Battleship;
-use vars qw($VERSION); $VERSION = '0.03';
+
+use vars qw($VERSION);
+$VERSION = '0.04';
+
 use strict;
 use Carp;
 use Games::Battleship::Player;
@@ -19,8 +20,7 @@ sub _init {  # {{{
     my ($self, @players) = @_;
     # Set up a default, two player game if no players are given.
     @players = ('', '') unless @players;
-    my $i = 0;
-    $self->add_player($_, ++$i) for @players;
+    $self->add_player($_) for @players;
 }  # }}}
 
 sub game_type {  # {{{
@@ -58,11 +58,11 @@ sub add_player {  # {{{
         if exists $self->{$key};
 
     # We are given a player object.
-    if (ref eq 'Games::Battleship::Player') {
+    if (ref ($player) eq 'Games::Battleship::Player') {
         $self->{$key} = $player;
     }
     # We are given the guts of a player.
-    elsif (ref eq 'HASH') {
+    elsif (ref ($player) eq 'HASH') {
         $self->{$key} = Games::Battleship::Player->new(
             id    => $i,
             name  => $player->{name},
@@ -77,7 +77,11 @@ sub add_player {  # {{{
             name => $player,
         );
     }
-    
+
+    # Add the player object reference to the list of game players.
+    push @{ $self->{players} }, $self->{$key};
+
+    # Hand the player object back.
     return $self->{$key};
 }  # }}}
 
@@ -105,53 +109,62 @@ sub player {  # {{{
     return $player;
 }  # }}}
 
+sub players { return shift->{players} } 
+
 sub play {  # {{{
     my ($self, %args) = @_;
     my $winner = 0;
 
     while (not $winner) {
-        # Take a turn per player.
-        for my $player (keys %$self) {
-            next if $player eq 'type';
+        # Take a turn per live player.
+        for my $player (@{ $self->{players} }) {
             next unless $player->{life};
 
             # Strike each opponent.
-            for my $opponent (keys %$self) {
-                next if $opponent eq 'type';
+            for my $opponent (@{ $self->{players} }) {
                 next if $opponent->{name} eq $player->{name} ||
                     !$opponent->{life};
-                $player->strike($opponent, $self->_get_coordinate);
+
+                my $res = -1;  # "duplicate strike" flag.
+                while ($res == -1) {
+                    $res = $player->strike(
+                        $opponent,
+                        $self->_get_coordinate($opponent)
+                    );
+                }
             }
         }
 
         # Do we have a winner?
-        my @alive = grep { $_->{life} } keys %$self;
+        my @alive = grep { $_->{life} } @{ $self->{players} };
         $winner = @alive == 1 ? shift @alive : undef;
     }
 
+warn $winner->name ." is the winner!\n";
     return $winner;
 }  # }}}
 
+# Return a coordinate from a player's grid.
 sub _get_coordinate {  # {{{
-    my $self = shift;
+    my ($self, $player) = @_;
+
     my ($x, $y);
 
     # Are we using a specific game type?
     if ($self->{type}) {
 carp "Unimlemented feature.  RTFM please.\n";
-#        if ($self->{type} eq 'text') {
-#        }
-#        elsif ($self->{type} eq 'cgi') {
-#        }
+#        if ($self->{type} eq 'text') {}
+#        elsif ($self->{type} eq 'cgi') {}
     }
 #    else {
         # No?  Okay, just return random coordinates, then.
         ($x, $y) = (
-            rand($self->{dimensions} + 1),
-            rand($self->{dimensions} + 1)
+            int 1 + rand $player->{grid}->{dimension}[0],
+            int 1 + rand $player->{grid}->{dimension}[1]
         );
 #    }
 
+#    warn "$x, $y\n";
     return $x, $y;
 }  # }}}
 
@@ -169,33 +182,32 @@ Games::Battleship - "You sunk my battleship!"
 
   $g = Games::Battleship->new('Gene', 'Aeryk');
 
-  $player_obj = $g->add_player('Stephanie');
-  $player_obj = $g->player('Stephanie');
+  $g->add_player('Stephanie');
+
+  $player_obj = $g->player('Rufus'); 
+
+  @player_objects = @{ $g->players };
 
   $winner = $g->play;
-  print "$winner->{name} wins!\n";
+  print $winner->name ." wins!\n";
 
 =head1 ABSTRACT
 
-Battleship game implementation
+Hasbro Battleship game implementation
 
 =head1 DESCRIPTION
 
 A C<Games::Battleship> object represents a battleship game with
 players, fleets and playing grids.
 
-No, I did not do this for a school assignment, but rather because I
-played it one night with my friend, Aeryk, and decided that it might
-be fun to implement.
+I played this one night with my friend, Aeryk, and decided that it 
+would be a fun challenge to automate.  One of the more elegant
+challenges turned into the 
+C<Games::Battleship::Grid::_segment_intersection> function.
 
-NOTE: Currently, this module's C<play> feature is not especially 
-functional for the sole reason that the game C<type> attribute does
-not exist yet.  Please bear with me.  An upcoming release will rock.
-
-The game can definitely be played with by using the individual 
-methods in the C<Games::Battleship*> modules.
-
-Please see the distribution test script for some working code.
+Besides the handy C<play> method, a game can be played with the 
+individual methods in the C<Games::Battleship::*> modules.  See the 
+distribution test script for working code.
 
 =head1 PUBLIC METHODS
 
@@ -220,30 +232,26 @@ If not given explicitly, "player_1" and "player_2" are used as the
 player names and the standard game is set up.  That is, a 10x10 grid 
 with 5 predetermined ships per player.
 
-Please see L<Games::Battleship::Player> for details on the default 
-settings.
+See L<Games::Battleship::Player> for details on the default settings.
 
-=item B<game_type> 'text' | 'cgi' | 'gui'
+=item * B<game_type> 'text' | 'cgi'
 
   $g->game_type($type);
   $type = $g->game_type;
+
+* NOTE: Currently, this method is B<not> implemented, so don't get 
+your hopes up just yet.  I will add this to an upcoming release, and 
+there will be happiness in the valley.
 
 Specify or retreive the type of game to play.  This setting is 
 optional and used by the C<_get_coordinate> method to properly 
 request input of coordinates.
 
-If not set, a random coordinate is chosen based on the C<dimensions> 
-attribute.
+If not set, a random coordinate is chosen based on a player's
+C<Games::Battleship::Grid> C<dimension> attribute.
 
-For text (and curses), this is an interactive console request.  For 
+For text (e.g. curses), this is an interactive console request.  For 
 CGI programs, this is a call to the C<CGI::param> method.
-
-* I have not determined the most appropriate functionality for the 
-C<gui> type, yet.  There are many many GUIs out there...
-
-* NOTE: Currently, this method is B<not> implemented, so don't get 
-your hopes up just yet.  I will add this to an upcoming release, and 
-there will be happiness in the valley.
 
 =item B<add_player> [$PLAYER] [, $NUMBER]
 
@@ -252,7 +260,7 @@ there will be happiness in the valley.
   $g->add_player($player, $number);
   $g->add_player({
       $player => {
-          fleet => \@crafts,
+          fleet => \@fleet,
           dimensions => [$w, $h],
       }
   });
@@ -337,6 +345,10 @@ footprint, etc.
 L<Games::Battleship::Player>
 
 C<http://www.hasbro.com/pl/page.viewproduct/product_id.9388/dn/default.cfm>
+
+=head1 CVS
+
+# $Id: Battleship.pm,v 1.17 2004/02/05 09:22:30 gene Exp $
 
 =head1 AUTHOR
 
