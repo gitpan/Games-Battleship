@@ -2,3 +2,12 @@ Changes file for Games::Battleship
 
 0.01 Thu Aug 21 22:35:42 2003
     - Created by Module::Husbandry.
+
+0.02 Wed Sep 03 2003
+    - Constructor allows multi player.
+    - Removed forgotton use lib directives.
+    - "Test more better now."
+    - Cleaned and enhanced POD.
+    - Added a not-yet-functioning game_type method.
+    - I'm sure there was much more that I changed, but forgot to keep
+      track.  : (

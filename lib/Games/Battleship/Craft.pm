@@ -1,4 +1,4 @@
-# $Id: Craft.pm,v 1.1 2003/08/26 01:04:56 gene Exp $
+# $Id: Craft.pm,v 1.2 2003/09/04 00:32:21 gene Exp $
 
 package Games::Battleship::Craft;
 use vars qw($VERSION); $VERSION = '0.01';

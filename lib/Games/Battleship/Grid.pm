@@ -1,10 +1,9 @@
-# $Id: Grid.pm,v 1.7 2003/08/26 01:04:56 gene Exp $
+# $Id: Grid.pm,v 1.8 2003/09/04 00:32:21 gene Exp $
 
 package Games::Battleship::Grid;
-use vars qw($VERSION); $VERSION = '0.01';
+use vars qw($VERSION); $VERSION = '0.02';
 use strict;
 use Carp;
-use lib 'lib';
 use Games::Battleship::Craft;
 
 sub new {  # {{{

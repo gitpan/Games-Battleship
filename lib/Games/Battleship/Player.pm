@@ -1,10 +1,9 @@
-# $Id: Player.pm,v 1.7 2003/08/26 01:04:56 gene Exp $
+# $Id: Player.pm,v 1.8 2003/09/04 00:32:21 gene Exp $
 
 package Games::Battleship::Player;
-use vars qw($VERSION); $VERSION = '0.01';
+use vars qw($VERSION); $VERSION = '0.02';
 use strict;
 use Carp;
-use lib 'lib';
 use Games::Battleship::Craft;
 use Games::Battleship::Grid;
 
@@ -221,7 +220,7 @@ An optional attribute provided to give the player a name.
 
 If not provided, the string "player_1" or "player_2" is used.
 
-=item * fleet => [$SHIP_1, $SHIP_2, ... $SHIP_N]
+=item * fleet => [$CRAFT_1, $CRAFT_2, ... $CRAFT_N]
 
 Array reference of C<Games::Battleship::Craft> objects.
 
@@ -232,16 +231,16 @@ created by default.
 
 Array reference with the player's grid height and width values.
 
-If the grid dimensions are not explicitely specified, the standard
+If the grid dimensions are not explicitly specified, the standard
 10 x 10 grid is used by default.
 
 =back
 
 =item B<grid>
 
-  $grid = $aeryk->grid($gene);
+  $grid = $player->grid($enemy);
 
-Return the playing grid as a text matrix like,
+Return the playing grid as a text matrix like this,
 
   . . . . . . . . . .
   . . . . . . . . . .
@@ -254,14 +253,12 @@ Return the playing grid as a text matrix like,
   . . . . . A . . . B
   . . . . . A . . . B
 
-with a trailing newline.
-
 =item B<strike> $PLAYER, @COORDINATE
 
-  $strike = $player_1->strike($player_2, $x, $y);
+  $strike = $player->strike($enemy, $x, $y);
 
-Strike the given player at the given coordinate and return a numeric 
-value to indicate success or failure.
+Strike the enemy at the given coordinate and return a numeric value 
+to indicate success or failure.
 
 The player to strike must be given as a C<Games::Battleship::Player>
 object and the coordinate must be given as a numeric pair.

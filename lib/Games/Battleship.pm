@@ -1,32 +1,68 @@
-# $Id: Battleship.pm,v 1.5 2003/08/26 01:04:56 gene Exp $
+# $Id: Battleship.pm,v 1.6 2003/09/04 00:32:21 gene Exp $
 
 package Games::Battleship;
-use vars qw($VERSION); $VERSION = '0.01';
+use vars qw($VERSION); $VERSION = '0.02';
 use strict;
 use Carp;
-use lib 'lib';
 use Games::Battleship::Player;
 
 sub new {  # {{{
-    my ($proto, %args) = @_;
+    my $proto = shift;
     my $class = ref ($proto) || $proto;
-
-    my $self = {
-        type     => $args{type} || undef,
-        player_1 => Games::Battleship::Player->new(
-            name  => $args{player_1} || 'player_1',
-            fleet => $args{fleet_1},
-            dimensions => $args{dimensions_1},
-        ),
-        player_2 => Games::Battleship::Player->new(
-            name  => $args{player_2} || 'player_2',
-            fleet => $args{fleet_2},
-            dimensions => $args{dimensions_2},
-        ),
-    };
-
+    my $self = {};
     bless $self, $class;
+    $self->_init(@_);
     return $self;
+}  # }}}
+
+sub _init {  # {{{
+    my ($self, @players) = @_;
+    # Set up a default, two player game if no players are given.
+    @players = ('', '') unless @players;
+    my $i = 0;
+    $self->add_player($_, ++$i) for @players;
+}  # }}}
+
+sub game_type {  # {{{
+    my $self = shift;
+    $self->{type} = shift if @_;
+    return $self->{type};
+}  # }}}
+
+sub add_player {  # {{{
+    my ($self, $player, $i) = @_;
+
+    # Make the key to use for each player.
+    $i = 1 unless $i;
+    my $key = "player_$i";
+
+    # Make a player name to use, if one is not provided.
+    $player = $key unless $player;
+
+    # Bail out if we are trying to add an existing player.
+    croak "A player number $i already exists\n"
+        if exists $self->{$key};
+
+    # We are given a player object.
+    if (ref eq 'Games::Battleship::Player') {
+        $self->{$key} = $player;
+    }
+    # We are given the guts of a player.
+    elsif (ref eq 'HASH') {
+        $self->{$key} = Games::Battleship::Player->new(
+            name  => $player->{name},
+            fleet => $player->{fleet},
+            dimensions => $player->{dimensions},
+        );
+    }
+    # We are just given a name.
+    else {
+        $self->{$key} = Games::Battleship::Player->new(
+            name => $player,
+        );
+    }
+    
+    return $self->{$key};
 }  # }}}
 
 sub player {  # {{{
@@ -114,15 +150,11 @@ Games::Battleship - "You sunk my battleship!"
 
   use Games::Battleship;
 
-  $g = Games::Battleship->new(
-      player_1 => 'Gene',
-      player_2 => 'Aeryk',
-  );
+  $g = Games::Battleship->new('Gene', 'Aeryk');
 
-  # This method is handy, but only used in the test script.
-  $player_obj = $g->player($name);
-  $player_obj = $g->player($key);
-  $player_obj = $g->player($number);
+  $g->add_player('Stephanie');
+
+  $player_obj = $g->player('Stephanie');
 
   $winner = $g->play;
   print "$winner->{name} wins!\n";
@@ -142,36 +174,46 @@ be fun to implement.
 
 NOTE: Currently, this module's C<play> feature is not especially 
 functional for the sole reason that the game C<type> attribute does
-not exist yet.  Please bear with me.  The next release will rock.
+not exist yet.  Please bear with me.  An upcoming release will rock.
 
 The game can definitely be played with by using the individual 
 methods in the C<Games::Battleship*> modules.
 
-Please see the distribution test script for working code.
+Please see the distribution test script for some working code.
 
 =head1 PUBLIC METHODS
 
 =over 4
 
-=item B<new> [%ARGUMENTS]
+=item B<new> [@PLAYERS]
 
-=over 4
+  $g = Games::Battleship->new;
+  $g = Games::Battleship->new(
+      $player_name,
+      $player_object,
+      { name => $name, fleet => \@fleet, dimensions => [$w1, $h1], },
+  );
 
-=item * player_1 => $STRING
+Construct a new C<Games::Battleship> object.
 
-=item * player_2 => $STRING
+The players may be specified.  If not given explicitly, "player_1" 
+and "player_2" are used as the names.
 
-Specify the player names.  If not given, explicitly, "player_1" and 
-"player_2" are used as the names, by default.
+The players can be given as a scalar name, a 
+C<Games::Battleship::Player> object or as a hash reference containing
+C<Games::Battleship::Player> object attributes.
 
-=item * type => text | cgi | gui
+=item B<game_type> 'text' | 'cgi' | 'gui'
 
-The type of game we are playing.  This argument is optional.  If not
-given, a random coodinate is chosen based on the C<dimensions> 
+  $g->game_type($type);
+  $type = $g->game_type;
+
+Specify or retreive the type of game to play.  This setting is 
+optional and used by the C<_get_coordinate> method to properly 
+request input of coordinates.
+
+If not set, a random coordinate is chosen based on the C<dimensions> 
 attribute.
-
-This argument is used by the C<_get_coordinate> method to properly 
-request input of the coordinates.
 
 For text (and curses), this is an interactive console request.  For 
 CGI programs, this is a call to the C<CGI::param> method.
@@ -179,13 +221,36 @@ CGI programs, this is a call to the C<CGI::param> method.
 * I have not determined the most appropriate functionality for the 
 C<gui> type, yet.  There are many many GUIs out there...
 
-* NOTE: Currently, this argument is B<not> implemented, so don't get 
-your hopes up just yet.  I will add this to the next release, and 
+* NOTE: Currently, this method is B<not> implemented, so don't get 
+your hopes up just yet.  I will add this to an upcoming release, and 
 there will be happiness in the valley.
 
-=back
+=item B<add_player> [$PLAYER] [, $NUMBER]
 
-=item B<play> [%ARGUMENTS]
+  $g->add_player;
+  $g->add_player($player);
+  $g->add_player({
+      $player => {
+          fleet => \@crafts,
+          dimensions => [$w, $h],
+      }
+  });
+  $g->add_player($player, $number);
+
+Add a player to the existing game.
+
+This method can accept either nothing, a simple scalar as a name, a 
+C<Games::Battleship::Player> object or a hash reference where the key
+is the player name and the value is a hash reference of 
+C<Games::Battleship::Player> attributes.
+
+Also, this method accepts an optional numeric second argument that is 
+the player number.  If this number is not provided, a one (1) is used.
+
+If a player already exists with that number, a fatal error is 
+returned.
+
+=item B<play>
 
   $winner = $g->play;
 
@@ -222,10 +287,9 @@ Return a grid position (as integers).
 
 =head1 TO DO
 
-Allow more than 2 players in the constuctor and add an C<add_player>
-method.
-
 Allow network play.
+
+Make the C<play> method output the player grids for each turn.
 
 Keep pending games and personal scores in a couple handy text files.
 

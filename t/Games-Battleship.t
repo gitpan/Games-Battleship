@@ -1,7 +1,6 @@
 BEGIN {
     use strict;
     use Test::More 'no_plan';#tests => 1;
-    use lib 'lib';
     use_ok 'Games::Battleship';
 }
 
@@ -11,15 +10,15 @@ my $obj = eval {
 #print "$@\n";
 isa_ok $obj, 'Games::Battleship', 'with no arguments';
 
-$obj = Games::Battleship->new(
-    player_1 => 'gene',
-    player_2 => 'aeryk',
-);
+$obj = Games::Battleship->new('gene', 'aeryk');
 isa_ok $obj, 'Games::Battleship', 'with named players';
+
+isa_ok $obj->add_player('stephi', 3), 'Games::Battleship::Player', 'stephi';
 
 my $gene  = $obj->player('gene');
 my $aeryk = $obj->player('aeryk');
-isa_ok $gene, 'Games::Battleship::Player', 'by name';
+my $steph = $obj->player('stephi');
+isa_ok $steph, 'Games::Battleship::Player', 'by name';
 isa_ok $obj->player('player_1'), 'Games::Battleship::Player', 'by key';
 isa_ok $obj->player(1), 'Games::Battleship::Player', 'by number';
 
@@ -40,7 +39,7 @@ __END__
 print join "\n", (
     $gene->grid,
     '~',
-    "player: aeryk\nopponent: gene",
+    "Player: Aeryk, Opponent: Gene",
     $aeryk->grid($gene),
     (defined $strike ? $strike == 1 ? 'Hit!' : 'Miss' : 'Duplicate strike'),
 ), "\n";
