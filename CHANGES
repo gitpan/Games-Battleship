@@ -11,3 +11,13 @@ Changes file for Games::Battleship
     - Added a not-yet-functioning game_type method.
     - I'm sure there was much more that I changed, but forgot to keep
       track.  : (
+
+0.03 Thu Sep 04 2003
+    - Find the least whole number that is not used as a player number.
+    - Update and fix documentation.
+    - In the Battleship.pm _init() loop, next if not player_, rather
+      than only if "type".
+    - Added an id attribute to creation of a new player.
+    - Remove the 10 player limit by just looking at a player id
+      attribute.
+    - Whoops.  Added <= 0 to the life decrement on hit condition.

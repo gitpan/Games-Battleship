@@ -1,7 +1,7 @@
-# $Id: Battleship.pm,v 1.6 2003/09/04 00:32:21 gene Exp $
+# $Id: Battleship.pm,v 1.9 2003/09/05 04:56:03 gene Exp $
 
 package Games::Battleship;
-use vars qw($VERSION); $VERSION = '0.02';
+use vars qw($VERSION); $VERSION = '0.03';
 use strict;
 use Carp;
 use Games::Battleship::Player;
@@ -32,11 +32,25 @@ sub game_type {  # {{{
 sub add_player {  # {{{
     my ($self, $player, $i) = @_;
 
-    # Make the key to use for each player.
-    $i = 1 unless $i;
+    # If we are not given a number to use...
+    unless ($i) {
+        # Find the least whole number that is not used as a player
+        # number.
+        my @nums = sort { $a <=> $b }
+            grep { s/^player_(\d+)$/$1/ }
+                keys %$self;
+        my $n = 1;
+        for (@nums) {
+            last if $n > $_;
+            $n++;
+        }
+        $i = $n;
+    }
+
+    # Make the key to use for our object.
     my $key = "player_$i";
 
-    # Make a player name to use, if one is not provided.
+    # Set the player name to the key, if one is not provided.
     $player = $key unless $player;
 
     # Bail out if we are trying to add an existing player.
@@ -50,6 +64,7 @@ sub add_player {  # {{{
     # We are given the guts of a player.
     elsif (ref eq 'HASH') {
         $self->{$key} = Games::Battleship::Player->new(
+            id    => $i,
             name  => $player->{name},
             fleet => $player->{fleet},
             dimensions => $player->{dimensions},
@@ -58,6 +73,7 @@ sub add_player {  # {{{
     # We are just given a name.
     else {
         $self->{$key} = Games::Battleship::Player->new(
+            id   => $i,
             name => $player,
         );
     }
@@ -71,12 +87,13 @@ sub player {  # {{{
 
     # Step through each player...
     for (keys %$self) {
-        next if $_ eq 'type';
+        next unless /^player_/;
 
-        # Found if we are looking at the same player name or number
-        # (currently restricted to 10 players) or key.
-        if (($_ eq $name) || ($self->{$_}{name} eq $name) ||
-            ($name =~ /^\d+$/ && $name eq substr $_, -1, 1)
+        # Are we looking at the same player name, key or number?
+        if (
+            $_ eq $name ||
+            $self->{$_}{name} eq $name ||
+            $self->{$_}{id} eq $name
         ) {
             # Set the player object to return.
             $player = $self->{$_};
@@ -152,8 +169,7 @@ Games::Battleship - "You sunk my battleship!"
 
   $g = Games::Battleship->new('Gene', 'Aeryk');
 
-  $g->add_player('Stephanie');
-
+  $player_obj = $g->add_player('Stephanie');
   $player_obj = $g->player('Stephanie');
 
   $winner = $g->play;
@@ -196,12 +212,16 @@ Please see the distribution test script for some working code.
 
 Construct a new C<Games::Battleship> object.
 
-The players may be specified.  If not given explicitly, "player_1" 
-and "player_2" are used as the names.
-
 The players can be given as a scalar name, a 
 C<Games::Battleship::Player> object or as a hash reference containing
 C<Games::Battleship::Player> object attributes.
+
+If not given explicitly, "player_1" and "player_2" are used as the 
+player names and the standard game is set up.  That is, a 10x10 grid 
+with 5 predetermined ships per player.
+
+Please see L<Games::Battleship::Player> for details on the default 
+settings.
 
 =item B<game_type> 'text' | 'cgi' | 'gui'
 
@@ -229,13 +249,13 @@ there will be happiness in the valley.
 
   $g->add_player;
   $g->add_player($player);
+  $g->add_player($player, $number);
   $g->add_player({
       $player => {
           fleet => \@crafts,
           dimensions => [$w, $h],
       }
   });
-  $g->add_player($player, $number);
 
 Add a player to the existing game.
 
@@ -245,10 +265,11 @@ is the player name and the value is a hash reference of
 C<Games::Battleship::Player> attributes.
 
 Also, this method accepts an optional numeric second argument that is 
-the player number.  If this number is not provided, a one (1) is used.
+the player number.  If this number is not provided, the least whole
+number that is not represented in the player IDs is used.
 
-If a player already exists with that number, a fatal error is 
-returned.
+If for some reason, a player already exists with that number, a fatal 
+error is returned.
 
 =item B<play>
 

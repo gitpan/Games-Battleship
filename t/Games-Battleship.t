@@ -1,6 +1,6 @@
 BEGIN {
     use strict;
-    use Test::More 'no_plan';#tests => 1;
+    use Test::More tests => 15;
     use_ok 'Games::Battleship';
 }
 
@@ -13,7 +13,9 @@ isa_ok $obj, 'Games::Battleship', 'with no arguments';
 $obj = Games::Battleship->new('gene', 'aeryk');
 isa_ok $obj, 'Games::Battleship', 'with named players';
 
-isa_ok $obj->add_player('stephi', 3), 'Games::Battleship::Player', 'stephi';
+my $stephi = $obj->add_player('stephi');
+isa_ok $stephi, 'Games::Battleship::Player', 'stephi';
+is $stephi->{id}, 3, 'add_player without id number';
 
 my $gene  = $obj->player('gene');
 my $aeryk = $obj->player('aeryk');

@@ -1,7 +1,7 @@
-# $Id: Player.pm,v 1.8 2003/09/04 00:32:21 gene Exp $
+# $Id: Player.pm,v 1.9 2003/09/05 04:37:57 gene Exp $
 
 package Games::Battleship::Player;
-use vars qw($VERSION); $VERSION = '0.02';
+use vars qw($VERSION); $VERSION = '0.03';
 use strict;
 use Carp;
 use Games::Battleship::Craft;
@@ -12,6 +12,7 @@ sub new {  # {{{
     my $class = ref ($proto) || $proto;
 
     my $self = {
+        id    => $args{id}    || undef,
         name  => $args{name}  || undef,
         score => $args{score} || 0,
         life  => $args{life}  || 0,
@@ -47,14 +48,15 @@ sub new {  # {{{
 sub _init {  # {{{
     my ($self, $args) = @_;
 
+    # Initialize a grid and place the player's fleet, if one is
+    # provided.
     $self->{grid} = Games::Battleship::Grid->new(
         fleet => $self->{fleet},
         dimensions => $args->{dimensions},
     );
 
-    for (@{ $self->{fleet} }) {
-        $self->{life} += $_->{points};
-    }
+    # Compute the life points for this player.
+    $self->{life} += $_->{points} for @{ $self->{fleet} };
 }  # }}}
 
 # The enemy must be a G::B::Player object.
@@ -118,7 +120,7 @@ sub strike {  # {{{
 
             # Decrement the opponent's life.
             carp "$enemy->{name} is out of the game.\n"
-                if --$enemy->{life};
+                if --$enemy->{life} <= 0;
 
             return 1;
         }
