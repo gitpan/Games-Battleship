@@ -11,6 +11,7 @@ sub new {  # {{{
     my ($proto, %args) = @_;
     my $class = ref ($proto) || $proto;
     my $self = {
+        # User defined or use the standard, zero based one.
         dimension => $args{dimension} || [9, 9],
     };
     bless $self, $class;
@@ -125,8 +126,9 @@ sub _tail_coordinates {  # {{{
 sub _segment_intersection {  # {{{
     # 0 - Intersection dosn't exist.
     # 1 - Intersection exists.
-    # 0 (2) - two line segments are parallel
-    # 0 (3) - two line segments are collinear, but not overlap.
+# NOTE: We just care about yes/no.  The old way returns 2 and 3 also.
+    # 0 (was 2) - two line segments are parallel
+    # 0 (was 3) - two line segments are collinear, but not overlap.
     # 4 - two line segments are collinear, and share one same end point.
     # 5 - two line segments are collinear, and overlap.
 
@@ -162,8 +164,9 @@ sub _segment_intersection {  # {{{
     }
     else {
         # AB & CD are parallel.
-#        return 2 if $t1 != 0 && $t2 != 0;
         return 0 if $t1 != 0 && $t2 != 0;
+# NOTE:  We just care about yes/no, so this is the old way:
+#        return 2 if $t1 != 0 && $t2 != 0;
 
         # When AB & CD are collinear...
         my ($a, $b, $c, $d);
@@ -177,6 +180,7 @@ sub _segment_intersection {  # {{{
             $d = $x2 > $x3 ? $x2 : $x3;
 
             if ($d < $a || $c > $b) {
+# NOTE:  We just care about yes/no.  The old way returns 3:
                 return 0;#3;
             }
             elsif ($d == $a || $c == $b) {
@@ -195,6 +199,7 @@ sub _segment_intersection {  # {{{
             $d = $y2 > $y3 ? $y2 : $y3;
 
             if ($d < $a || $c > $b) {
+# NOTE:  We just care about yes/no.  The old way returns 3:
                 return 0;#3;
             }
             elsif ($d == $a || $c == $b) {
@@ -224,17 +229,13 @@ Games::Battleship::Grid - A Battleship grid class
       dimension => [$width, $height],
   );
 
-=head1 ABSTRACT
-
-A Battleship grid class
-
 =head1 DESCRIPTION
 
-A C<Games::Battleship::Grid> object represents a Battleship grid 
-class.
+A C<Games::Battleship::Grid> object represents a Battleship playing
+surface complete with fleet position references and computation.
 
-Check out the powerful and mathematically elegant 
-C<_segment_intersection> function in the source code of this module.
+Check out the powerful C<_segment_intersection> function in the 
+source code of this module.  :-)
 
 =head1 PUBLIC METHODS
 
@@ -246,48 +247,42 @@ C<_segment_intersection> function in the source code of this module.
 
 =item * fleet => [$CRAFT_1, $CRAFT_2, ... $CRAFT_N]
 
-Array reference of an unlimited number of C<Games::Battleship::Craft> 
-objects.
+Optional array reference of an unlimited number of 
+C<Games::Battleship::Craft> objects.
 
-If provided, the fleet will be placed on the grid.  It is required 
-that the number of ships and their combined sizes be less than the 
-area of the grid.
+If provided, the fleet will be placed on the grid with random but
+non-overlapping positions.
+
+Naturally, it is required that the combined sizes of the ships be
+less than the area of the grid.
 
 =item * dimensions => [$WIDTH, $HEIGHT]
 
-Array reference with the grid height and width values.
+Optional array reference with the grid height and width values.
+
+If not provided, the standard ten by ten playing surface is used.
 
 =back
 
 =back
 
-=head1 PRIVATE METHODS AND FUNCTIONS
+=head1 PRIVATE FUNCTIONS
 
 =over 4
-
-=item B<_init> [$CRAFT_1, $CRAFT_2, ... $CRAFT_N]
-
-Initialize the grid with the C<Games::Battleship::Craft> object 
-dimensions.
-
-If an array reference of craft objects is provided, place them on the
-grid so that they do not intesect (overlap or touch).
 
 =item B<_tail_coordinates> @COORDINATES, $SPAN
 
   ($orientation, $x1, $y1) = _tail_coordinates($x0, $y0, $span);
 
-Return the vertical or horizontal line segment orientation and the
-tail coordinates, based on the head coodinates and a span (the length
-of the segment).
-
-Note that this routine is a function, not an object method.
+Return a vector for the craft.  That is, hand back the vertical or 
+horizontal line segment orientation and the tail coordinates based on
+the head coodinates and the length of the segment (i.e. the craft).
 
 =item B<_segment_intersection> @COORDINATES
 
   $intersect = _segment_intersection(
-      px0, py0, px1, py1,
-      qx0, qy0, qx1, qy1
+      px0, py0,  px1, py1,
+      qx0, qy0,  qx1, qy1
   );
 
 Return zero if there is no intersection (or touching or overlap).
@@ -301,10 +296,10 @@ define a line segment.
 
 Allow diagonal craft placement.
 
-Allow some type of interactive craft repositioning.
-
 Allow placement restriction rules (e.g. not on edges, not adjacent, 
 etc.).
+
+Allow some type of interactive craft repositioning.
 
 Allow > 2D playing spaces.
 
@@ -314,11 +309,13 @@ L<Games::Battleship>
 
 L<Games::Battleship::Craft>
 
+Segment intersection:
+
 C<http://www.meca.ucl.ac.be/~wu/FSA2716/Exercise1.htm>
 
 =head1 CVS
 
-$Id: Grid.pm,v 1.11 2004/02/05 09:20:23 gene Exp $
+$Id: Grid.pm,v 1.12 2004/02/07 03:49:26 gene Exp $
 
 =head1 AUTHOR
 
@@ -326,9 +323,6 @@ Gene Boggs E<lt>gene@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2003, Gene Boggs
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. 
+See L<Games::Battleship>.
 
 =cut

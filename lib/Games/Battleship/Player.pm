@@ -1,7 +1,7 @@
 package Games::Battleship::Player;
 
 use vars qw($VERSION);
-$VERSION = '0.04';
+$VERSION = '0.0401';
 
 use strict;
 use Carp;
@@ -210,7 +210,7 @@ A Battleship player class
 =head1 DESCRIPTION
 
 A C<Games::Battleship::Player> object represents a Battleship player 
-class, complete with fleet and game surface.
+complete with fleet and game surface.
 
 =head1 PUBLIC METHODS
 
@@ -236,7 +236,7 @@ If not provided, the string "player_1" or "player_2" is used.
 
 Array reference of C<Games::Battleship::Craft> objects.
 
-If not explicitely provided, the standard one (with 5 ships) is
+If not explicitely provided, the standard fleet (with 5 ships) is
 created by default.
 
 =item * dimensions => [$WIDTH, $HEIGHT]
@@ -244,7 +244,7 @@ created by default.
 Array reference with the player's grid height and width values.
 
 If the grid dimensions are not explicitly specified, the standard
-10 x 10 grid is used by default.
+ten by ten grid is used.
 
 =back
 
@@ -252,7 +252,7 @@ If the grid dimensions are not explicitly specified, the standard
 
   $grid = $player->grid($enemy);
 
-Return the playing grid as a text matrix like this,
+Return the playing grid as a text matrix like this:
 
   . . . . . . . . . .
   . . . . . . . . . .
@@ -264,6 +264,9 @@ Return the playing grid as a text matrix like this,
   . D . . . A . . . B
   . . . . . A . . . B
   . . . . . A . . . B
+
+Eventually, this method will respect the game type and return an
+apppropriate representation, such as a PNG file or XML, etc.
 
 =item B<strike> $PLAYER, @COORDINATE
 
@@ -291,7 +294,7 @@ grid" at the given coordinate and a zero (i.e. false) is returned.
 If a player calls for a strike at a coordinate that was already 
 struck, a warning is emitted and a negative one (-1) is returned.
 
-=item B<craft> $KEY [, $VALUE]
+=item B<craft> $KEY [$VALUE]
 
   $craft = $player->craft($id);
   $craft = $player->craft(id => $id);
@@ -312,13 +315,17 @@ be the C<id> attribute.
 =item B<_is_a_hit> @COORDINATE
 
 Return true or false if another player's strike is successful.  That
-is, there is a craft at the given coordinate.
+is, return a one if there is a craft at the given coordinate and zero
+otherwise.
 
 =back
 
 =head1 TO DO
 
 Include a weapon argument in the C<strike> method.
+
+Make the C<grid> method honor the game type and return something 
+appropriate.
 
 =head1 SEE ALSO
 
@@ -330,7 +337,7 @@ L<Games::Battleship::Grid>
 
 =head1 CVS
 
-$Id: Player.pm,v 1.17 2004/02/05 08:59:32 gene Exp $
+$Id: Player.pm,v 1.18 2004/02/07 03:57:28 gene Exp $
 
 =head1 AUTHOR
 
@@ -338,9 +345,6 @@ Gene Boggs E<lt>gene@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2003, Gene Boggs
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. 
+See L<Games::Battleship>.
 
 =cut

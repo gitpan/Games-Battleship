@@ -1,7 +1,7 @@
 package Games::Battleship;
 
 use vars qw($VERSION);
-$VERSION = '0.04';
+$VERSION = '0.0401';
 
 use strict;
 use Carp;
@@ -226,7 +226,7 @@ Construct a new C<Games::Battleship> object.
 
 The players can be given as a scalar name, a 
 C<Games::Battleship::Player> object or as a hash reference containing
-C<Games::Battleship::Player> object attributes.
+meaningful object attributes.
 
 If not given explicitly, "player_1" and "player_2" are used as the 
 player names and the standard game is set up.  That is, a 10x10 grid 
@@ -234,24 +234,11 @@ with 5 predetermined ships per player.
 
 See L<Games::Battleship::Player> for details on the default settings.
 
-=item * B<game_type> 'text' | 'cgi'
-
-  $g->game_type($type);
-  $type = $g->game_type;
-
-* NOTE: Currently, this method is B<not> implemented, so don't get 
-your hopes up just yet.  I will add this to an upcoming release, and 
-there will be happiness in the valley.
-
-Specify or retreive the type of game to play.  This setting is 
-optional and used by the C<_get_coordinate> method to properly 
-request input of coordinates.
-
-If not set, a random coordinate is chosen based on a player's
-C<Games::Battleship::Grid> C<dimension> attribute.
-
-For text (e.g. curses), this is an interactive console request.  For 
-CGI programs, this is a call to the C<CGI::param> method.
+You can actually play a game with any number of players.  Each player 
+can have any size grid (of integer dimension) and any number of 
+"ships" (which can also be made up).  These options are all easy to
+set and are described in the individual C<Games::Battleship::*> 
+modules.
 
 =item B<add_player> [$PLAYER] [, $NUMBER]
 
@@ -310,55 +297,64 @@ of the key).
 
   ($x, $y) = $g->_get_coordinate;
 
-Return a grid position (as integers).
+Return a grid position.
+
+Currently this returns a random intager coordinate with the player
+grid dimensions as the maximum.
+
+Eventually this method will honor a game type attribute to allow 
+different interfaces such as CGI, GTk or Curses, etc.
 
 =back
 
 =head1 TO DO
 
-Allow network play.
+Implement the "number of shots" measure.  This may be based on life
+remaining, shots taken, hits made or ships sunk.
 
 Make the C<play> method output the player grids for each turn.
 
 Keep pending games and personal scores in a couple handy text files.
 
-Make a simple eg/ program with text.
+Make an eg/simple program with text and then one with colored text.
 
-Make an eg/ Curses program with colored text.
+Implement game type and then allow network play.
 
-Make an eg/ CGI program both as text and with Imager.
+Make an eg/cgi program both as text and with Imager.
 
-Make an eg/ standalone GUI program too.
+Make standalone GUI programs too...
 
-Enhance to include the features in Hasbro's "Advanced Mission Game":
-(2) exocet missles fired from your aircraft carrier;
-(1) tomahawk missle with a massive footprint fired from your battleship;
-(2) apache missles fired from your destroyer;
-(2) torpedoes fired from your sub;
-(2) recon airplanes for surveillance;
-sonar imaging from your sub.
-This means implementing weapon and recon classes with name, quantity, 
-footprint, etc.
+Enhance to include these features:
+sonar imaging from your submarine.
+2 exocet missles fired from your aircraft carrier.
+1 tomahawk missle fired from your battleship.
+2 apache missles fired from your destroyer.
+2 torpedoes fired from your submarine.
+2 recon airplanes for surveillance.
+
+This all just means implementing weapon and recon classes with name,
+quantity and footprint.
 
 =head1 SEE ALSO
 
-L<Games::Battleship::Player>
-
-C<http://www.hasbro.com/pl/page.viewproduct/product_id.9388/dn/default.cfm>
+L<Games::Battleship::Player>,
+L<Games::Battleship::Craft>,
+L<Games::Battleship::Grid>
 
 =head1 CVS
 
-# $Id: Battleship.pm,v 1.17 2004/02/05 09:22:30 gene Exp $
+$Id: Battleship.pm,v 1.18 2004/02/07 04:41:07 gene Exp $
 
 =head1 AUTHOR
 
 Gene Boggs E<lt>gene@cpan.orgE<gt>
 
-=head1 COPYRIGHT AND LICENSE
+=head1 COPYRIGHT
 
-Copyright 2003, Gene Boggs
+Copyright 2003-2004, Gene Boggs
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. 
+=head1 LICENSE
+
+This software is free to use for non-commercial, personal purposes.
 
 =cut

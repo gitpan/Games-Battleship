@@ -1,7 +1,7 @@
 BEGIN {
     use strict;
     use Test::More tests => 16;
-    use lib 'lib';
+use lib 'lib';
     use_ok 'Games::Battleship';
 }
 
@@ -45,16 +45,15 @@ ok length ($gene->grid), 'gene grid';
 ok length ($aeryk->grid($gene)), 'aeryk grid';
 
 __END__
-
-# This works great:
-$obj = Games::Battleship->new('gene', 'aeryk');
-$obj->play;
-
 # And so does this.
 print join "\n", (
     $gene->grid,
     '~',
     "Player: Aeryk, Opponent: Gene",
     $aeryk->grid($gene),
-    (defined $strike ? $strike == 1 ? 'Hit!' : 'Miss' : 'Duplicate strike'),
+    ($strike == 1 ? 'Hit!' : $strike == 0 ? 'Miss' : 'Duplicate strike'),
 ), "\n";
+
+# This works great but is sometimes seemingly infinite...
+#$obj = Games::Battleship->new('gene', 'aeryk');
+$obj->play;

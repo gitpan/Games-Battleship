@@ -1,23 +1,27 @@
 package Games::Battleship::Craft;
 
 use vars qw($VERSION);
-$VERSION = '0.02';
-
+$VERSION = '0.0201';
 use strict;
 use Carp;
 
-sub new {  # {{{
+sub new {
     my ($proto, %args) = @_;
     my $class = ref ($proto) || $proto;
 
+    # The name is a required attribute.
     croak "Craft name not provided.\n" unless defined $args{name};
 
     my $self = {
-        id => $args{id},
+        # Who am I?
+        id   => $args{id},
         name => $args{name},
-        hits => $args{hits} || 0,
-        points => $args{points} || undef,
+        # Where's my bow (craft nose)?
         position => $args{position} || undef,
+        # How much am I worth?
+        points => $args{points} || undef,
+        # How many times have I been hit?
+        hits => $args{hits} || 0,
     };
 
     # Default the id to the uppercased first char of name.
@@ -26,13 +30,15 @@ sub new {  # {{{
 
     bless $self, $class;
     return $self;
-}  # }}}
+}
 
-sub hit {  # {{{
+sub hit {
     my $self = shift;
+    # Tally the hit.
     $self->{hits}++;
+    # Hand back the remainder of the craft's value.
     return $self->{points} - $self->{hits};
-}  # }}}
+}
 
 1;
 
@@ -46,7 +52,7 @@ Games::Battleship::Craft - A Battleship craft class
 
   use Games::Battleship::Craft;
 
-  $craft = Games::Battleship::Craft->new(
+  my $craft = Games::Battleship::Craft->new(
       id => 'T',
       name => 'tug boat',
       points => 1,
@@ -54,14 +60,10 @@ Games::Battleship::Craft - A Battleship craft class
 
   $points_remaining = $craft->hit;
 
-=head1 ABSTRACT
-
-A Battleship craft class
-
 =head1 DESCRIPTION
 
-A C<Games::Battleship::Craft> object represents a Battleship craft 
-class.
+A C<Games::Battleship::Craft> object represents the profile of a
+Battleship 
 
 =head1 PUBLIC METHODS
 
@@ -91,7 +93,10 @@ An attribute used to define the line segment span on the playing grid.
 
 =item * position => [$X, $Y]
 
-The position of the craft's "nose" on the grid.
+The position of the craft bow ("nose") on the grid.
+
+Currently, the craft is assumed to have a horizontal or vertical
+alignment.  Soon there will be diagonal positioning...
 
 =back
 
@@ -99,22 +104,22 @@ The position of the craft's "nose" on the grid.
 
   $points_remaining = $craft->hit;
 
-Increment the craft's C<hit> attribute value and return the 
-difference between the C<points> and C<hit> attribute values.
+Increment the craft's C<hit> attribute value and return what's left of
+the craft (total point value minus the number of hits).
 
 =back
 
 =head1 TO DO
 
+Have different numbers of different weapons.
+
 Allow a craft to have a width.
 
-=head1 SEE ALSO
-
-L<Games::Battleship>
+Allow diagonal positions too.  Why not?
 
 =head1 CVS
 
-$Id: Craft.pm,v 1.7 2004/02/05 09:00:27 gene Exp $
+$Id: Craft.pm,v 1.8 2004/02/07 03:24:23 gene Exp $
 
 =head1 AUTHOR
 
@@ -122,9 +127,6 @@ Gene Boggs E<lt>gene@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2003, Gene Boggs
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. 
+See L<Games::Battleship>.
 
 =cut
