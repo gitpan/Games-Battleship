@@ -1,0 +1,9 @@
+CHANGES
+MANIFEST
+MANIFEST.SKIP
+Makefile.PL
+lib/Games/Battleship.pm
+lib/Games/Battleship/Craft.pm
+lib/Games/Battleship/Grid.pm
+lib/Games/Battleship/Player.pm
+t/Games-Battleship.t
