@@ -1,5 +1,8 @@
 Changes file for Games::Battleship
 
+0.0402 Fri Feb 9 2004
+    - Fixed POD again.  Argh.
+
 0.0401 Fri Feb 6 2004
     - Fix and enhance documentation big time.
 

@@ -1,8 +1,7 @@
 package Games::Battleship;
 
 use vars qw($VERSION);
-$VERSION = '0.0401';
-
+$VERSION = '0.0402';
 use strict;
 use Carp;
 use Games::Battleship::Player;
@@ -179,21 +178,17 @@ Games::Battleship - "You sunk my battleship!"
 =head1 SYNOPSIS
 
   use Games::Battleship;
-
+  
   $g = Games::Battleship->new('Gene', 'Aeryk');
-
+  
   $g->add_player('Stephanie');
-
+  
   $player_obj = $g->player('Rufus'); 
-
+  
   @player_objects = @{ $g->players };
-
+  
   $winner = $g->play;
   print $winner->name ." wins!\n";
-
-=head1 ABSTRACT
-
-Hasbro Battleship game implementation
 
 =head1 DESCRIPTION
 
@@ -343,7 +338,7 @@ L<Games::Battleship::Grid>
 
 =head1 CVS
 
-$Id: Battleship.pm,v 1.18 2004/02/07 04:41:07 gene Exp $
+$Id: Battleship.pm,v 1.19 2004/02/09 20:02:07 gene Exp $
 
 =head1 AUTHOR
 
