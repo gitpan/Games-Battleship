@@ -1,4 +1,8 @@
-Changes file for Games::Battleship
+Revision history for Games-Battleship
+
+0.06_1
+    - Shaking the inappropriate, orphaned cpan-rating by renaming.
+    - Refactored distrobution with Dist::Zilla.
 
 0.05 Wed Aug 25 2004
     - Removed lame code fold markers.
